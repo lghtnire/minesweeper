@@ -45,6 +45,7 @@ class Minesweeper:
         self.canvas.bind("<ButtonRelease-1>", self.on_left_release)
         self.canvas.bind("<ButtonPress-3>", self.on_right_press)
         self.canvas.bind("<ButtonRelease-3>", self.on_right_release)
+        self.canvas.bind("<ButtonPress-2>", self.on_middle_press)
         self.canvas.pack()
         
     def menu(self):
@@ -299,6 +300,10 @@ class Minesweeper:
             # 只有右键，触发标记
             self.mark_mine(event.y//self.size, event.x//self.size)
         self.right_pressed = False
+    
+    def on_middle_press(self, event):
+        """中键按下，重新开始游戏"""
+        self.restart()
         
     def double_click(self, r, c):
         """双击翻开周围格子"""
