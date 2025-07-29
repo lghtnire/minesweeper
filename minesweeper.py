@@ -2,6 +2,17 @@ import tkinter as tk
 from tkinter import messagebox
 import random
 from PIL import Image,ImageTk
+import sys
+import os
+
+def resource_path(relative_path):
+    """获取资源文件的绝对路径，兼容PyInstaller打包后的路径"""
+    try:
+        # PyInstaller创建临时文件夹，将路径存储在_MEIPASS中
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
 
 class Minesweeper:
     def __init__(self, master, sizes=(8,8), mines=10,size=20):
@@ -12,8 +23,8 @@ class Minesweeper:
         self.size=size
         self.mode="tradition"
         #录入图片
-        imgs0 = [Image.open(f'images/type{i}.jpg').resize((self.size,self.size)) for i in range(9)]
-        imgs1 = [Image.open(f'images/mine{i}.jpg').resize((self.size,self.size)) for i in range(4)]
+        imgs0 = [Image.open(resource_path(f'images/type{i}.jpg')).resize((self.size,self.size)) for i in range(9)]
+        imgs1 = [Image.open(resource_path(f'images/mine{i}.jpg')).resize((self.size,self.size)) for i in range(4)]
         self.type_imgs = [ImageTk.PhotoImage(img) for img in imgs0]
         self.mine_imgs = [ImageTk.PhotoImage(img) for img in imgs1]
         
