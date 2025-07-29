@@ -36,8 +36,15 @@ class Minesweeper:
                 x = (col+1/2) * self.size  # 计算x坐标
                 y = (row+1/2) * self.size  # 计算y坐标
                 self.image_map[row][col]=self.canvas.create_image(x, y, image=self.mine_imgs[-1])
-        self.canvas.bind("<Button-1>", lambda e: self.reveal(e.y//self.size,e.x//self.size))
-        self.canvas.bind("<Button-3>", lambda e: self.mark_mine(e.y//self.size,e.x//self.size))
+        
+        # 绑定事件处理器
+        self.left_pressed = False
+        self.right_pressed = False
+        
+        self.canvas.bind("<ButtonPress-1>", self.on_left_press)
+        self.canvas.bind("<ButtonRelease-1>", self.on_left_release)
+        self.canvas.bind("<ButtonPress-3>", self.on_right_press)
+        self.canvas.bind("<ButtonRelease-3>", self.on_right_release)
         self.canvas.pack()
         
     def menu(self):
@@ -264,6 +271,53 @@ class Minesweeper:
                         self.revealed.add((nr, nc))
         
         self.check_win()
+        
+    def on_left_press(self, event):
+        """左键按下"""
+        self.left_pressed = True
+        if self.right_pressed:
+            # 同时按下左右键，触发双击
+            self.double_click(event.y//self.size, event.x//self.size)
+    
+    def on_left_release(self, event):
+        """左键释放"""
+        if self.left_pressed and not self.right_pressed:
+            # 只有左键，触发翻开
+            self.reveal(event.y//self.size, event.x//self.size)
+        self.left_pressed = False
+    
+    def on_right_press(self, event):
+        """右键按下"""
+        self.right_pressed = True
+        if self.left_pressed:
+            # 同时按下左右键，触发双击
+            self.double_click(event.y//self.size, event.x//self.size)
+    
+    def on_right_release(self, event):
+        """右键释放"""
+        if self.right_pressed and not self.left_pressed:
+            # 只有右键，触发标记
+            self.mark_mine(event.y//self.size, event.x//self.size)
+        self.right_pressed = False
+        
+    def double_click(self, r, c):
+        """双击翻开周围格子"""
+        if (r, c) not in self.revealed or (r, c) in self.marked:
+            return
+        
+        num = self.numbers.get((r, c), 0)
+        if num == 0:
+            return
+        
+        # 检查周围是否有标记的地雷
+        marked_count = sum((r+dr, c+dc) in self.marked for dr in [-1, 0, 1] for dc in [-1, 0, 1])
+        
+        if marked_count == num:
+            for dr in [-1, 0, 1]:
+                for dc in [-1, 0, 1]:
+                    nr, nc = r+dr, c+dc
+                    if 0 <= nr < self.rows and 0 <= nc < self.cols:
+                        self.reveal(nr, nc)
 
     def mark_mine(self,r,c):
         """右键标记地雷"""
@@ -314,8 +368,10 @@ class Minesweeper:
             self.canvas.delete(self.image_map[r][c])
             self.image_map[r][c]=self.canvas.create_image((c+0.5)*self.size, (r+0.5)*self.size, image=self.mine_imgs[1])
         tk.messagebox.showinfo("游戏结束", "你踩到地雷了！")
-        self.canvas.unbind("<Button-1>")
-        self.canvas.unbind("<Button-3>")
+        self.canvas.unbind("<ButtonPress-1>")
+        self.canvas.unbind("<ButtonRelease-1>")
+        self.canvas.unbind("<ButtonPress-3>")
+        self.canvas.unbind("<ButtonRelease-3>")
 
     def check_win(self):
         """检查胜利条件"""
@@ -324,8 +380,10 @@ class Minesweeper:
             non_mines = self.rows * self.cols - self.mines
             if len(self.revealed) == non_mines:
     #            tk.messagebox.showinfo("胜利", "恭喜你扫雷成功！")
-                self.canvas.unbind("<Button-1>")
-                self.canvas.unbind("<Button-3>")
+                self.canvas.unbind("<ButtonPress-1>")
+                self.canvas.unbind("<ButtonRelease-1>")
+                self.canvas.unbind("<ButtonPress-3>")
+                self.canvas.unbind("<ButtonRelease-3>")
                 self.restart()
         if self.mode =='exercise1':
             finish=True
