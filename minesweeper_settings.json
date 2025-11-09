@@ -1,0 +1,5 @@
+{
+  "auto_restart_on_fail": false,
+  "auto_restart_on_win": false,
+  "enable_r_restart": false
+}
